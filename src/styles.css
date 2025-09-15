@@ -1,0 +1,291 @@
+
+/* ===== Result: risk banner (stripe + glossy card) =================== */
+.risk-banner{
+  position: relative;
+  border-radius: 16px;
+  padding: 14px 16px 12px 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 12px 28px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+
+.risk-banner .rb-row{ display:flex; align-items:center; gap:12px; }
+.risk-banner .rb-icon{ width:22px; height:22px; flex:0 0 auto; }
+.risk-banner .rb-text{ display:grid; gap:4px; }
+
+/* 左側彩色條紋 */
+.risk-banner .rb-stripe{
+  position:absolute; left:0; top:0; bottom:0; width:6px;
+  border-radius:16px 0 0 16px;
+}
+
+/* 下方細緻嚴重度量表 */
+.risk-meter{ height:6px; margin-top:10px; border-radius:999px; overflow:hidden;
+  background: rgba(255,255,255,.06);
+}
+.risk-meter > span{ display:block; height:100%; width:0; border-radius:inherit; transition:width .28s ease; }
+
+/* —— 顏色主題（依風險） —— */
+.rb-minimal .rb-stripe{ background: linear-gradient(180deg,#22c55e,#16a34a); }
+.rb-limited .rb-stripe{ background: linear-gradient(180deg,#60a5fa,#0ea5e9); }
+.rb-high .rb-stripe{ background: linear-gradient(180deg,#f59e0b,#f97316); }
+.rb-unacceptable .rb-stripe{ background: linear-gradient(180deg,#ef4444,#dc2626); }
+
+.rb-minimal .risk-meter > span{ background: linear-gradient(90deg,#16a34a,#22c55e); }
+.rb-limited .risk-meter > span{ background: linear-gradient(90deg,#2563eb,#0ea5e9); }
+.rb-high .risk-meter > span{ background: linear-gradient(90deg,#f59e0b,#f97316); }
+.rb-unacceptable .risk-meter > span{ background: linear-gradient(90deg,#ef4444,#dc2626); }
+
+/* 讓描述膠囊維持你先前半透明質感（若已加可忽略） */
+.risk-desc { margin: 10px 0 12px; }
+.risk-capsule{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:999px;
+  backdrop-filter:saturate(140%) blur(2px);
+  box-shadow:0 8px 20px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.06);
+  border:1px solid transparent;
+}
+.risk-capsule.minimal{ background:linear-gradient(135deg,rgba(34,197,94,.16),rgba(16,185,129,.10)); border-color:rgba(34,197,94,.38); color:#d9fbe1;}
+.risk-capsule.limited{ background:linear-gradient(135deg,rgba(59,130,246,.16),rgba(14,165,233,.10)); border-color:rgba(59,130,246,.38); color:#dbeafe;}
+.risk-capsule.high{ background:linear-gradient(135deg,rgba(249,115,22,.18),rgba(245,158,11,.12)); border-color:rgba(249,115,22,.42); color:#ffedd5;}
+.risk-capsule.unacceptable{ background:linear-gradient(135deg,rgba(239,68,68,.20),rgba(220,38,38,.14)); border-color:rgba(239,68,68,.45); color:#ffe4e6;}
+
+/* ==== Risk description capsule (semi-transparent, glossy) ==== */
+.risk-desc { margin: 10px 0 12px; }
+
+.risk-capsule{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;          /* 高度感靠 padding，字級維持原樣 */
+  border-radius: 999px;         /* 膠囊 */
+  backdrop-filter: saturate(140%) blur(2px);
+  box-shadow:
+    0 8px 20px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.06);
+  border: 1px solid transparent;
+  /* 不設定 font-size → 繼承原本大小 */
+}
+
+/* 色系（半透明 + 細邊） */
+.risk-capsule.minimal{
+  background: linear-gradient(135deg, rgba(34,197,94,.16), rgba(16,185,129,.10));
+  border-color: #34d399;
+  color: #d9fbe1;
+}
+.risk-capsule.limited{
+  background: linear-gradient(135deg, rgba(59,130,246,.16), rgba(14,165,233,.10));
+  border-color: #3b82f6;
+  color: #dbeafe;
+}
+.risk-capsule.high{
+  background: linear-gradient(135deg, rgba(249,115,22,.18), rgba(245,158,11,.12));
+  border-color: #ff9800;
+  color: #ffedd5;
+}
+.risk-capsule.unacceptable{
+  background: linear-gradient(135deg, rgba(239,68,68,.20), rgba(220,38,38,.14));
+  border-color: #ef4444;
+  color: #ffe4e6;
+}
+:root{
+  --bg-start:#2a145a;
+  --bg-end:#0a3a57;
+  --card:#0f1530;
+  --muted:#a8b3cf;
+  --text:#e6e9f5;
+  --primary:#6ee7ff;
+  --primary-strong:#22d3ee;
+  --accent:#7c3aed;
+  --success:#16a34a;
+  --warning:#f59e0b;
+  --danger:#ef4444;
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(124,58,237,.35), transparent 50%),
+    radial-gradient(1000px 700px at 90% 20%, rgba(34,211,238,.25), transparent 50%),
+    linear-gradient(135deg, var(--bg-start), var(--bg-end));
+}
+
+a{color:inherit}
+
+.container{
+  max-width:1100px;
+  margin:0 auto;
+  padding:72px 24px 120px;
+}
+
+.section{ margin-top:56px; }
+
+.card{
+  background:var(--card);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:24px;
+  padding:28px;
+  box-shadow:0 16px 40px rgba(0,0,0,.35);
+  position: relative;               /* ⬅ stacking context for buttons */
+}
+
+.title {
+  margin:0 0 18px;
+  font-size:32px;
+  font-weight:800;
+  letter-spacing:-0.02em;
+}
+.muted{ color:var(--muted) }
+
+/* Progress */
+.progress{
+  width:100%;
+  height:8px;
+  margin:0 0 28px;
+  background:rgba(255,255,255,.06);
+  border-radius:999px; overflow:hidden;
+}
+.progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--primary),var(--primary-strong));
+  width:0%; transition:width .25s ease;
+}
+
+/* Question examples */
+.ex-list { margin:8px 0 0 18px; line-height:1.5; }
+.ex-list.two-cols { columns:2; column-gap:24px; }
+.q-title { margin:10px 0 6px; font-weight:700; letter-spacing:-0.01em; }
+
+/* Options grid */
+.options{
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px;
+  position: relative; z-index: 1;   /* ⬅ stay below buttons */
+}
+@media (max-width: 860px){ .options{ grid-template-columns:1fr } }
+
+/* === OPTION PILL BUTTONS (深底、Hover 亮、Active 外框) === */
+.pill-btn{
+  width:100%;
+  display:inline-flex; align-items:center; justify-content:flex-start; gap:8px;
+  padding:14px 16px;
+  border:none; border-radius:16px;
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-weight:600; cursor:pointer;
+  transition:all .15s ease; text-align:left;
+}
+.pill-btn:hover{
+  background:rgba(255,255,255,.12);
+  transform:translateY(-1px);
+}
+.pill-btn.active{
+  outline:2px solid var(--primary-strong);
+  background:rgba(34,211,238,.15);
+}
+
+/* Outline style (e.g., Back) */
+.pill-btn.outline{
+  background:transparent;
+  outline:2px solid rgba(255,255,255,.2);
+}
+
+/* Nav buttons (Back / Next) */
+.nav-row{
+  margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between;
+  position: relative; z-index: 2;   /* ⬅ above options */
+}
+.nav-btn{
+  display:inline-flex; align-items:center; gap:10px;
+  padding:12px 18px; border-radius:999px; font-weight:700;
+  border:1.8px solid #e5e7eb; background:#fff; color:#0f172a;
+  pointer-events:auto; cursor:pointer;
+}
+.nav-btn svg{ width:22px; height:22px; }
+.nav-primary{ background:#111827; color:#fff; border-color:#111827; }
+.nav-primary:hover{ filter:brightness(1.05); }
+
+/* Back 按鈕用深色半透明，不是白底 */
+.nav-btn.nav-outline{
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  border-color: rgba(255,255,255,.18);
+}
+.nav-btn.nav-outline:hover{
+  background: rgba(255,255,255,.12);
+}
+
+/* Result hero — 變成主角 */
+.risk-hero{
+  border-radius:18px; padding:28px; text-align:center; color:#fff;
+  margin-bottom:16px; box-shadow:0 10px 30px rgba(0,0,0,.12);
+}
+.risk-title{
+  font-size:36px; font-weight:900; letter-spacing:-0.02em;
+}
+.risk-sub{
+  margin-top:8px; font-size:16px; opacity:.95; font-weight:600;
+}
+.risk-hero.minimal{ background:linear-gradient(135deg,#16a34a,#22c55e); }
+.risk-hero.limited{ background:linear-gradient(135deg,#2563eb,#3b82f6); }
+.risk-hero.high{ background:linear-gradient(135deg,#f59e0b,#f97316); }
+.risk-hero.unacceptable{ background:linear-gradient(135deg,#ef4444,#dc2626); }
+
+/* Reason chips */
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 14px; }
+.chip{
+  background:#f5f7fa; border:1px solid #e5e7eb;
+  border-radius:999px; padding:6px 10px; font-size:12px; font-weight:600; color:#0f172a;
+}
+
+/* Footer */
+footer{
+  margin-top:72px; opacity:.8; font-size:14px; color:var(--muted); text-align:center;
+}
+
+
+/* --- Footer with brand --- */
+.site-footer{ margin-top:72px; }
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  color:var(--muted);
+  text-align:center;
+  opacity:.9;
+}
+.footer-brand{ display:inline-flex; align-items:center; }
+.footer-logo{
+  height:35px;              /* 專業不搶眼：20–28px 高 */
+  width:auto;
+
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.25));
+}
+@media (max-width:520px){
+  .footer-inner{ flex-direction:column; gap:8px; }
+}
+/* —— 調整 nav-row 讓 Back 左，Next 靠右 —— */
+.nav-row {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.nav-row .next-btn {
+  margin-left: auto; /* 自動推到右邊 */
+}
+
+/* —— 調整 Exemple 說明文的 padding —— */
+.muted {
+  padding-top: 6px;   /* 上下間距多一點點 */
+  padding-bottom: 6px;
+  line-height: 1.5;   /* 行距保持好閱讀 */
+}
+.q-title {
+  font-size: 1.25rem;  /* 原本大概是 1rem, 這裡放大一點 */
+  font-weight: 600;    /* 粗一點更醒目 */
+}

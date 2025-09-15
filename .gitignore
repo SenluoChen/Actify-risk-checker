@@ -1,0 +1,38 @@
+# Node modules
+node_modules/
+
+# Build output
+build/
+dist/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE settings
+.vscode/
+
+# Dependency locks (optional, if you want reproducible builds, keep package-lock.json)
+# package-lock.json
+
+# Environment variables
+.env
+
+# Misc
+*.tmp
+*.swp
+
+# Coverage
+coverage/
+
+# Others
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore public assets if not needed
+# public/*.png
+# public/*.ico
