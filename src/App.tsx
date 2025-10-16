@@ -10,11 +10,18 @@ import {
   Scale,
   ArrowLeft,
   ArrowRight,
-  CircleSlash
+  CircleSlash,
+  Brain,
+  Building2,
+  Earth,
+  FileText,
+  Settings,
+  UserCheck
 } from "lucide-react";
 import Intro from "./components/Intro";
 
 type RiskLevel = "Minimal" | "Limited" | "High" | "Unacceptable";
+export type Role = 'provider'|'deployer'|'importer'|'distributor'|'manufacturer'|'other';
 
 type Question = {
   id: string;
@@ -31,7 +38,69 @@ const Inline: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 /** —— 精簡且專業的問卷（已依你的要求更新） —— */
 const QUESTIONS: Question[] = [
-  // Q1 — 保留且置頂：Regulated domains（原樣不改）
+  // Q1 — 新增：Role question
+  {
+    id: "role",
+    title: "What is your main activity with AI systems?",
+    options: [
+      {
+        label: (
+          <Inline>
+            <Brain size={16} />
+            We create or develop AI systems.
+          </Inline>
+        ),
+        value: "provider"
+      },
+      {
+        label: (
+          <Inline>
+            <Building2 size={16} />
+            We use AI systems in our work.
+          </Inline>
+        ),
+        value: "deployer"
+      },
+      {
+        label: (
+          <Inline>
+            <Earth size={16} />
+            We bring AI systems into the EU.
+          </Inline>
+        ),
+        value: "importer"
+      },
+      {
+        label: (
+          <Inline>
+            <FileText size={16} />
+            We sell or distribute AI systems.
+          </Inline>
+        ),
+        value: "distributor"
+      },
+      {
+        label: (
+          <Inline>
+            <Settings size={16} />
+            We build products that include AI.
+          </Inline>
+        ),
+        value: "manufacturer"
+      },
+      {
+        label: (
+          <Inline>
+            <UserCheck size={16} />
+            We study or advise on AI.
+          </Inline>
+        ),
+        value: "other"
+      }
+    ]
+  },
+
+  // Q2 — 保留且置頂：Regulated domains（原樣不改）
   {
     id: "opportunity",
     title: "Which regulated domains does your AI impact?",
@@ -303,10 +372,24 @@ const QUESTIONS: Question[] = [
   }
 ];
 
+/** —— Risk mapping by role —— */
+export type RiskTier = 'minimal'|'low'|'medium'|'high';
+
+export function riskFromRole(role?: Role): RiskTier {
+  switch (role) {
+    case 'provider':
+    case 'importer':
+    case 'manufacturer': return 'high';
+    case 'deployer':     return 'medium';
+    case 'distributor':  return 'low';
+    default:             return 'minimal';
+  }
+}
+
 /** —— 分類邏輯（依更新後問卷）——
  * 優先順序：Unacceptable > High > Limited > Minimal
  */
-function classify(a: Record<string, string | string[]>): RiskLevel {
+function classify(a: Record<string, string | string[] | Role>): RiskLevel {
   // Unacceptable risk（任何一項命中即為不可接受）
   if (
     a.public_realtime_face === "yes_public_realtime_face" ||
@@ -319,19 +402,40 @@ function classify(a: Record<string, string | string[]>): RiskLevel {
   }
 
   // High risk（Annex III 領域、一般生物辨識、或安全組件）
+  let domainRisk: RiskLevel = "Minimal";
   if (Array.isArray(a.opportunity)) {
     const high = ["edu", "job", "health", "finance", "welfare", "law", "border", "justice"];
-    if ((a.opportunity as string[]).some((v) => high.includes(v))) return "High";
+    if ((a.opportunity as string[]).some((v) => high.includes(v))) domainRisk = "High";
   }
-  if (a.biometric_data === "yes_biometric_data") return "High";
-  if (a.safety_component === "yes_safety") return "High";
+  if (a.biometric_data === "yes_biometric_data") domainRisk = "High";
+  if (a.safety_component === "yes_safety") domainRisk = "High";
 
   // Limited risk（互動或內容生成/修改 → 透明義務）
-  if (a.user_interaction === "yes_user_interaction") return "Limited";
-  if (a.gen_or_modify_content === "yes_gen_or_modify_content") return "Limited";
+  if (domainRisk === "Minimal") {
+    if (a.user_interaction === "yes_user_interaction") domainRisk = "Limited";
+    if (a.gen_or_modify_content === "yes_gen_or_modify_content") domainRisk = "Limited";
+  }
 
-  // Minimal
-  return "Minimal";
+  // Get role-based risk and take the higher of the two
+  const roleRisk = riskFromRole(a.role as Role);
+  const roleToRiskLevel: Record<RiskTier, RiskLevel> = {
+    'minimal': 'Minimal',
+    'low': 'Minimal',
+    'medium': 'Limited',
+    'high': 'High'
+  };
+  
+  const roleBasedRiskLevel = roleToRiskLevel[roleRisk];
+  
+  // Return the higher risk level
+  const riskHierarchy: Record<RiskLevel, number> = {
+    'Minimal': 0,
+    'Limited': 1,
+    'High': 2,
+    'Unacceptable': 3
+  };
+  
+  return riskHierarchy[domainRisk] >= riskHierarchy[roleBasedRiskLevel] ? domainRisk : roleBasedRiskLevel;
 }
 
 /** —— UI: 進度條 —— */
@@ -442,7 +546,7 @@ const ResultCard: React.FC<{ result: RiskLevel; reasons: string[]; onReset: () =
 export default function App() {
   const [started, setStarted] = useState(false);
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[] | Role>>({});
   const [finished, setFinished] = useState(false);
 
   const total = QUESTIONS.length;
@@ -451,6 +555,21 @@ export default function App() {
   // 結果原因（專業但簡潔）
   const reasons: string[] = useMemo(() => {
     const out: string[] = [];
+
+    // Role-based risk
+    if (answers.role) {
+      const roleRisk = riskFromRole(answers.role as Role);
+      if (roleRisk === 'high') {
+        const roleLabels = {
+          'provider': 'AI system provider',
+          'importer': 'AI system importer',
+          'manufacturer': 'Product manufacturer with AI'
+        };
+        out.push(`Role: ${roleLabels[answers.role as keyof typeof roleLabels] || answers.role}`);
+      } else if (roleRisk === 'medium') {
+        out.push('Role: AI system deployer');
+      }
+    }
 
     // Annex III
     const picked = Array.isArray(answers.opportunity) ? (answers.opportunity as string[]) : [];
@@ -480,7 +599,8 @@ export default function App() {
           "Large facial image database",
           "Biometric identification/categorisation",
           "Safety component",
-          "Regulated domain:"
+          "Regulated domain:",
+          "Role:"
         ].some((k) => r.startsWith(k))
       );
     if (!hasHigher) {
@@ -544,7 +664,7 @@ export default function App() {
           <div className="card">
             {!finished ? (
               <>
-                <h2 className="title">AI Risk Check</h2>
+                <h2 className="title">AI Act Risk Check</h2>
 
                 <Progress step={step} total={total} />
 
@@ -595,12 +715,12 @@ export default function App() {
         <div className="footer-inner" style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <a href="/" className="footer-brand" aria-label="Company home">
             <img
-              src={`${process.env.PUBLIC_URL}/actufyt.png`}
+              src={`${process.env.PUBLIC_URL}/actpilot-logo.png`}
               alt="Company logo"
               className="footer-logo"
             />
           </a>
-          <span>© {new Date().getFullYear()} Actify — AI Act compliance Assistant</span>
+          <span>© {new Date().getFullYear()} — AI Act compliance Assistant</span>
         </div>
       </footer>
     </div>
