@@ -16,9 +16,12 @@ import {
   Earth,
   FileText,
   Settings,
-  UserCheck
+  UserCheck,
+  Download,
+  Save
 } from "lucide-react";
 import Intro from "./components/Intro";
+import "./styles/theme.css";
 
 type RiskLevel = "Minimal" | "Limited" | "High" | "Unacceptable";
 export type Role = 'provider'|'deployer'|'importer'|'distributor'|'manufacturer'|'other';
@@ -46,7 +49,7 @@ const QUESTIONS: Question[] = [
       {
         label: (
           <Inline>
-            <Brain size={16} />
+            <Brain size={18} />
             We create or develop AI systems.
           </Inline>
         ),
@@ -55,7 +58,7 @@ const QUESTIONS: Question[] = [
       {
         label: (
           <Inline>
-            <Building2 size={16} />
+            <Building2 size={18} />
             We use AI systems in our work.
           </Inline>
         ),
@@ -64,7 +67,7 @@ const QUESTIONS: Question[] = [
       {
         label: (
           <Inline>
-            <Earth size={16} />
+            <Earth size={18} />
             We bring AI systems into the EU.
           </Inline>
         ),
@@ -73,7 +76,7 @@ const QUESTIONS: Question[] = [
       {
         label: (
           <Inline>
-            <FileText size={16} />
+            <FileText size={18} />
             We sell or distribute AI systems.
           </Inline>
         ),
@@ -82,7 +85,7 @@ const QUESTIONS: Question[] = [
       {
         label: (
           <Inline>
-            <Settings size={16} />
+            <Settings size={18} />
             We build products that include AI.
           </Inline>
         ),
@@ -91,7 +94,7 @@ const QUESTIONS: Question[] = [
       {
         label: (
           <Inline>
-            <UserCheck size={16} />
+            <UserCheck size={18} />
             We study or advise on AI.
           </Inline>
         ),
@@ -111,7 +114,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <GraduationCap size={16} />
+              <GraduationCap size={18} />
               Education / exams
             </Inline>
             <span
@@ -127,7 +130,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <Briefcase size={16} />
+              <Briefcase size={18} />
               Employment & HR
             </Inline>
             <span
@@ -143,7 +146,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <Stethoscope size={16} />
+              <Stethoscope size={18} />
               Medical diagnosis / treatment
             </Inline>
             <span
@@ -159,7 +162,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <CreditCard size={16} />
+              <CreditCard size={18} />
               Credit & financial services
             </Inline>
             <span
@@ -175,7 +178,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <Landmark size={16} />
+              <Landmark size={18} />
               Social benefits / eligibility
             </Inline>
             <span
@@ -191,7 +194,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <Shield size={16} />
+              <Shield size={18} />
               Law enforcement
             </Inline>
             <span
@@ -207,7 +210,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <Globe size={16} />
+              <Globe size={18} />
               Immigration / borders
             </Inline>
             <span
@@ -223,7 +226,7 @@ const QUESTIONS: Question[] = [
         label: (
           <div style={{ display: "grid", justifyItems: "start" }}>
             <Inline>
-              <Scale size={16} />
+              <Scale size={18} />
               Courts / legal decisions
             </Inline>
             <span
@@ -239,7 +242,7 @@ const QUESTIONS: Question[] = [
   label: (
     <div style={{ display: "grid", justifyItems: "start" }}>
       <Inline>
-        <CircleSlash size={16} />
+        <CircleSlash size={18} />
         None of the above
       </Inline>
     </div>
@@ -442,22 +445,22 @@ function classify(a: Record<string, string | string[] | Role>): RiskLevel {
 const Progress: React.FC<{ step: number; total: number }> = ({ step, total }) => {
   const pct = Math.round(((step + 1) / total) * 100);
   return (
-    <>
-      <div className="muted" style={{ marginBottom: 6 }}>
+    <div style={{ marginBottom: "24px" }}>
+      <div className="progress-label">
         Step {step + 1} of {total}
       </div>
-      <div className="progress">
-        <div className="progress-bar" style={{ width: `${pct}%` }} />
+      <div className="progress" aria-label="Progress">
+        <div className="progress__bar" style={{ width: `${pct}%` }} />
       </div>
-    </>
+    </div>
   );
 };
 
 /** —— UI: 選項按鈕 —— */
-const PillButton: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }
-> = ({ active, children, ...props }) => (
-  <button className={`pill-btn ${active ? "active" : ""}`} type="button" {...props}>
+const OptionButton: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { selected?: boolean }
+> = ({ selected, children, ...props }) => (
+  <button className={`option ${selected ? "option--selected" : ""}`} type="button" {...props}>
     {children}
   </button>
 );
@@ -505,23 +508,23 @@ const ResultCard: React.FC<{ result: RiskLevel; reasons: string[]; onReset: () =
 
   return (
     <>
-      <h3 className="title" style={{ marginBottom: 18 }}>Your AI risk classification</h3>
+      <h2 className="subtitle" style={{ marginBottom: 18 }}>Your AI risk classification</h2>
 
       {/* Capsule + meaning */}
       <div className="risk-desc" style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 28 }}>
         <span className={`risk-capsule ${result.toLowerCase()}`}>{riskText}</span>
-        <span className="muted" style={{ fontSize: 16, marginLeft: 1, color: "#fff" }}>
+        <span className="muted" style={{ fontSize: 16, marginLeft: 8 }}>
           {meaning}
         </span>
       </div>
 
-      {/* Obligations list, left-aligned with capsule text (hide for Minimal risk) */}
+      {/* Obligations list */}
       {result !== "Minimal" && (
-        <div style={{ marginTop: 16, marginLeft: 12, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-          <div className="muted" style={{ fontSize: 16, fontWeight: 500, marginBottom: 0, lineHeight: 1, color: '#e0e0e0' }}>
-            <span>Obligations <span style={{ marginRight: 10 }}>:</span></span>
+        <div style={{ marginTop: 16, display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+          <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8, color: "var(--text)" }}>
+            Obligations:
           </div>
-          <ul className="muted" style={{ marginLeft: 0, marginTop: 0 }}>
+          <ul className="muted" style={{ marginLeft: 16, marginTop: 0, lineHeight: 1.6 }}>
             {obligations.map((o, i) => (
               <li key={i}>{o}</li>
             ))}
@@ -529,14 +532,13 @@ const ResultCard: React.FC<{ result: RiskLevel; reasons: string[]; onReset: () =
         </div>
       )}
 
-  <div className="result-actions" style={{ marginTop: 2, display: "flex", justifyContent: "flex-end" }}>
+      <div className="result-actions">
         <button
           type="button"
-          className="pill-btn outline"
-          style={{ width: "auto", minWidth: 72, borderRadius: 999 }}
+          className="btn"
           onClick={onReset}
         >
-          <ArrowLeft strokeWidth={3} /> Restart
+          <ArrowLeft size={18} /> Restart
         </button>
       </div>
     </>
@@ -654,75 +656,91 @@ export default function App() {
   };
 
   return (
-    <div className="container">
-      {!started ? (
-        <section id="intro" className="section">
-          <Intro onStart={() => setStarted(true)} />
-        </section>
-      ) : (
-        <section id="checker" className="section">
-          <div className="card">
-            {!finished ? (
-              <>
-                <h2 className="title">AI Act Risk Check</h2>
+    <main className="page">
+      <div className="container">
+        {!started ? (
+          <section id="intro" className="section">
+            <Intro onStart={() => setStarted(true)} />
+          </section>
+        ) : (
+          <>
+            {/* Header */}
+            <header className="header">
+              <div className="header-left">
+                <img 
+                  src="/actpilot logo (Black)22.png" 
+                  alt="ActPilot Logo" 
+                  className="header-logo"
+                />
+                <h1 className="header-title">AI Risk Checker</h1>
+              </div>
+              <div className="header-actions">
+                <button className="btn btn--ghost" onClick={() => {/* TODO: Export PDF */}}>
+                  <Download size={18} />
+                  Download as PDF
+                </button>
+                <button className="btn secondary" onClick={() => {/* TODO: Save Results */}}>
+                  <Save size={18} />
+                  Save Results
+                </button>
+              </div>
+            </header>
 
-                <Progress step={step} total={total} />
+            {/* Main content */}
+            <section className="card">
+              {!finished ? (
+                <>
+                  <Progress step={step} total={total} />
 
-                <h3 className="q-title">{current.title}</h3>
-                {current.example}
+                  <h2 className="q-title">{current.title}</h2>
+                  {current.example}
 
-                <div className="options">
-                  {current.options.map((opt) => (
-                    <PillButton
-                      key={String(opt.value)}
-                      active={
-                        Array.isArray(answers[current.id])
-                          ? (answers[current.id] as string[]).includes(opt.value)
-                          : answers[current.id] === opt.value
-                      }
-                      onClick={() => onChoose(current, String(opt.value))}
-                    >
-                      {opt.label}
-                    </PillButton>
-                  ))}
-                </div>
+                  <div className="options">
+                    {current.options.map((opt) => (
+                      <OptionButton
+                        key={String(opt.value)}
+                        selected={
+                          Array.isArray(answers[current.id])
+                            ? (answers[current.id] as string[]).includes(opt.value)
+                            : answers[current.id] === opt.value
+                        }
+                        onClick={() => onChoose(current, String(opt.value))}
+                      >
+                        {opt.label}
+                      </OptionButton>
+                    ))}
+                  </div>
 
-                <div className="nav-row">
-                  {step > 0 && (
-                    <button type="button" className="nav-btn nav-outline" onClick={goBack}>
-                      <ArrowLeft strokeWidth={3} /> Back
-                    </button>
-                  )}
-                  {current.multi && (
-    <button
-      type="button"
-      className="nav-btn nav-outline next-btn"
-      onClick={nextFromMulti}
-    >
-      Next <ArrowRight strokeWidth={3} />
-    </button>
-  )}
-</div>
-              </>
-            ) : (
-              <ResultCard result={result as RiskLevel} reasons={reasons} onReset={reset} />
-            )}
+                  <div className="nav-row">
+                    {step > 0 && (
+                      <button type="button" className="nav-btn" onClick={goBack}>
+                        <ArrowLeft size={18} /> Back
+                      </button>
+                    )}
+                    {current.multi && (
+                      <button
+                        type="button"
+                        className="nav-btn next-btn"
+                        onClick={nextFromMulti}
+                      >
+                        Next <ArrowRight size={18} />
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <ResultCard result={result as RiskLevel} reasons={reasons} onReset={reset} />
+              )}
+            </section>
+          </>
+        )}
+
+        <footer className="site-footer">
+          <div className="footer-inner">
+            <span>© {new Date().getFullYear()} — AI Act compliance Assistant</span>
           </div>
-        </section>
-      )}
-
-      <footer id="contact" className="site-footer">
-        <div className="footer-inner" style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <a href="/" className="footer-brand" aria-label="Company home">
-            <img
-              src={`${process.env.PUBLIC_URL}/actpilot-logo.png`}
-              alt="Company logo"
-              className="footer-logo"
-            />
-          </a>
-          <span>© {new Date().getFullYear()} — AI Act compliance Assistant</span>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </main>
   );
 }
